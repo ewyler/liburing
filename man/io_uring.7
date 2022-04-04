@@ -25,7 +25,7 @@ This interface makes
 .B io_uring
 different from other UNIX I/O APIs,
 wherein,
-rather than just communicate between kernel and user space with system calls, 
+rather than just communicate between kernel and user space with system calls,
 ring buffers are used as the main mode of communication.
 This arrangement has various performance benefits which are discussed in a
 separate section below.
@@ -40,12 +40,12 @@ Set up shared buffers with
 .BR io_uring_setup (2)
 and
 .BR mmap (2),
-mapping into user space shared buffers for the submission queue (SQ) and the 
+mapping into user space shared buffers for the submission queue (SQ) and the
 completion queue (CQ).
 You place I/O requests you want to make on the SQ,
 while the kernel places the results of those operations on the CQ.
 .IP \(bu
-For every I/O request you need to make (like to read a file, write a file, 
+For every I/O request you need to make (like to read a file, write a file,
 accept a socket connection, etc), you create a submission queue entry,
 or SQE,
 describe the I/O operation you need to get done and add it to the tail of
@@ -77,15 +77,15 @@ you might be interested in checking the
 field of the CQE structure,
 which corresponds to the return value of the system
 call's equivalent,
-had you used it directly without using 
+had you used it directly without using
 .BR io_uring .
 For instance,
-a read operation under 
+a read operation under
 .BR io_uring ,
 started with the
 .BR IORING_OP_READ
 operation, issues the equivalent of the
-.BR read (2) 
+.BR read (2)
 system call. In practice, it mixes the semantics of
 .BR pread (2)
 and
@@ -114,7 +114,7 @@ If the normal system call would have returned a read size of 1024, then
 .I res
 would contain 1024.
 .IP \(bu
-Optionally, 
+Optionally,
 .BR io_uring_enter (2)
 can also wait for a specified number of requests to be processed by the kernel
 before it returns.
@@ -147,7 +147,7 @@ The kernel reads SQEs off the head of the queue.
 The kernel adds CQEs to the tail of the CQ.
 You read CQEs off the head of the queue.
 .SS Submission queue polling
-One of the goals of 
+One of the goals of
 .B io_uring
 is to provide a means for efficient I/O.
 To this end,
@@ -160,7 +160,7 @@ With SQ Polling,
 starts a kernel thread that polls the submission queue for any I/O
 requests you submit by adding SQEs.
 With SQ Polling enabled,
-there is no need for you to call 
+there is no need for you to call
 .BR io_uring_enter (2),
 letting you avoid the overhead of system calls.
 A designated kernel thread dequeues SQEs off the SQ as you add them and
@@ -172,33 +172,33 @@ The main steps in setting up
 consist of mapping in the shared buffers with
 .BR mmap (2)
 calls.
-In the example program included in this man page, 
+In the example program included in this man page,
 the function
 .BR app_setup_uring ()
-sets up 
+sets up
 .B io_uring
 with a QUEUE_DEPTH deep submission queue.
-Pay attention to the 2 
+Pay attention to the 2
 .BR mmap (2)
 calls that set up the shared submission and completion queues.
 If your kernel is older than version 5.4,
-three 
-.BR mmap(2) 
+three
+.BR mmap(2)
 calls are required.
 .PP
 .SS Submitting I/O requests
 The process of submitting a request consists of describing the I/O
-operation you need to get done using an 
+operation you need to get done using an
 .B io_uring_sqe
 structure instance.
 These details describe the equivalent system call and its parameters.
 Because the range of I/O operations Linux supports are very varied and the
 .B io_uring_sqe
-structure needs to be able to describe them, 
+structure needs to be able to describe them,
 it has several fields,
 some packed into unions for space efficiency.
-Here is a simplified version of struct 
-.B io_uring_sqe 
+Here is a simplified version of struct
+.B io_uring_sqe
 with some of the most often used fields:
 .PP
 .in +4n
@@ -216,7 +216,7 @@ struct io_uring_sqe {
 .EE
 .in
 
-Here is struct 
+Here is struct
 .B io_uring_sqe
 in full:
 
@@ -271,13 +271,14 @@ struct io_uring_sqe {
 .EE
 .in
 .PP
-To submit an I/O request to 
+To submit an I/O request to
 .BR io_uring ,
 you need to acquire a submission queue entry (SQE) from the submission
 queue (SQ),
-fill it up with details of the operation you want to submit and call 
-.BR io_uring_enter (2). 
-If you want to avoid calling 
+fill it up with details of the operation you want to submit and call
+.BR io_uring_enter (2).
+There are helper functions of the form io_uring_prep_X to enable proper
+setup of the SQE. If you want to avoid calling
 .BR io_uring_enter (2),
 you have the option of setting up Submission Queue Polling.
 .PP
@@ -332,11 +333,11 @@ sqe->off = offset;
 sqe->flags = 0;
 .EE
 .in
-.TP 
+.TP
 .B Memory ordering
-Modern compilers and CPUs freely reorder reads and writes without 
-affecting the program's outcome to optimize performance. 
-Some aspects of this need to be kept in mind on SMP systems since 
+Modern compilers and CPUs freely reorder reads and writes without
+affecting the program's outcome to optimize performance.
+Some aspects of this need to be kept in mind on SMP systems since
 .B io_uring
 involves buffers shared between kernel and user space.
 These buffers are both visible and modifiable from kernel and user space.
@@ -353,7 +354,7 @@ memory barriers are out of scope for further discussion on this man page.
 Once you place one or more SQEs on to the SQ,
 you need to let the kernel know that you've done so.
 You can do this by calling the
-.BR io_uring_enter (2) 
+.BR io_uring_enter (2)
 system call.
 This system call is also capable of waiting for a specified count of
 events to complete.
@@ -378,7 +379,7 @@ on the other hand is simpler since we're looking only for a return value
 back from the kernel.
 This is easily understood by looking at the completion queue event
 structure,
-struct 
+struct
 .BR io_uring_cqe :
 .PP
 .in +4n
@@ -445,7 +446,7 @@ Because of the shared ring buffers between kernel and user space,
 can be a zero-copy system.
 Copying buffers to and from becomes necessary when system calls that
 transfer data between kernel and user space are involved.
-But since the bulk of the communication in 
+But since the bulk of the communication in
 .B io_uring
 is via buffers shared between the kernel and user space,
 this huge performance overhead is completely avoided.
@@ -470,8 +471,8 @@ In
 on the other hand,
 you can batch several requests in one go,
 simply by queueing up multiple SQEs,
-each describing an I/O operation you want and make a single call to 
-.BR io_uring_enter (2). 
+each describing an I/O operation you want and make a single call to
+.BR io_uring_enter (2).
 This is possible due to
 .BR io_uring 's
 shared buffers based design.
@@ -484,7 +485,7 @@ them to the submission queue. This avoids the
 .BR io_uring_enter (2)
 call you need to make to tell the kernel to pick SQEs up.
 For high-performance applications,
-this means even lesser system call overheads.
+this means even fewer system call overheads.
 .SH CONFORMING TO
 .B io_uring
 is Linux-specific.
@@ -531,7 +532,7 @@ provides with its asynchronous processing of requests.
                  memory_order_acquire)
 
 int ring_fd;
-unsigned *sring_tail, *sring_mask, *sring_array, 
+unsigned *sring_tail, *sring_mask, *sring_array,
             *cring_head, *cring_tail, *cring_mask;
 struct io_uring_sqe *sqes;
 struct io_uring_cqe *cqes;
@@ -577,7 +578,7 @@ int app_setup_uring(void) {
     int cring_sz = p.cq_off.cqes + p.cq_entries * sizeof(struct io_uring_cqe);
 
     /* Rather than check for kernel version, the recommended way is to
-     * check the features field of the io_uring_params structure, which is a 
+     * check the features field of the io_uring_params structure, which is a
      * bitmask. If IORING_FEAT_SINGLE_MMAP is set, we can do away with the
      * second mmap() call to map in the completion ring separately.
      */
@@ -720,7 +721,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    /* 
+    /*
     * A while loop that reads from stdin and writes to stdout.
     * Breaks on EOF.
     */

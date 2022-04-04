@@ -12,9 +12,9 @@ io_uring_prep_msg_ring   - send a message to another ring
 .PP
 .BI "void io_uring_msg_ring(struct io_uring_sqe *" sqe ","
 .BI "                        int " fd ","
-.BI "                        unsigned int " len ","
+.BI "                        unsigned " len ","
 .BI "                        __u64 " data ","
-.BI "                        unsigned int " flags ");"
+.BI "                        unsigned " flags ");"
 
 .SH DESCRIPTION
 .PP
@@ -38,7 +38,7 @@ Currently there are no valid flag modifiers, this field must contain
 .B 0.
 
 The targeted ring may be any ring that the user has access to, even the ring
-itself. This request can be used for simple message passing to another ring,
+itself (??? why would one do this ???). This request can be used for simple message passing to another ring,
 allowing 32+64 bits of data to be transferred through the
 .I len
 and
